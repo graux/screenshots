@@ -487,16 +487,7 @@ class Screenshots {
         if (!iisBuild() && isFlavor()) {
           printStatus(
               'Warning: flavor parameter \'$flavor\' is ignored because no build is set for this device');
-        } else {
-          // add test target
-          final cleanedTarget = testPath.split(' ').first;
-          command.addAll([
-            '--target',
-            cleanedTarget,
-          ]);
-          printStatus(
-              'Running $cleanedTarget on \'$configDeviceName\' in locale $locale${isFlavor() ? ' with flavor $flavor' : ''}...');
-        }
+        } 
       }
       await utils.streamCmd(command, environment: environment);
       // process screenshots
