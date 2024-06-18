@@ -15,7 +15,6 @@ import 'screens.dart';
 import 'utils.dart' as utils;
 
 class ImageProcessor {
-
   ImageProcessor(Screens screens, ScreenshotsConfig config)
       : _screens = screens,
         _config = config;
@@ -47,7 +46,9 @@ class ImageProcessor {
     Archive? archive,
   ) async {
     final screenProps = _screens.getScreen(deviceName);
-    final screenshotsDir = '${_config.stagingDir}/$kTestScreenshotsDir';
+    final stagingDir = _config.stagingDir;
+
+    final screenshotsDir = _config.screenshotsDir;
     final screenshotPaths = fs.directory(screenshotsDir).listSync();
     if (screenProps == null) {
       printStatus('Warning: \'$deviceName\' images will not be processed');
@@ -57,11 +58,14 @@ class ImageProcessor {
         final screenResources =
             screenProps['resources'] as Map<String, dynamic>;
         final status = logger.startProgress(
-            'Processing screenshots from test...',
-            timeout: const Duration(minutes: 4));
+          'Processing screenshots from test...',
+          timeout: const Duration(
+            minutes: 4,
+          ),
+        );
 
         // unpack images for screen from package to local tmpDir area
-        await resources.unpackImages(screenResources, _config.stagingDir);
+        await resources.unpackImages(screenResources, stagingDir);
 
         // add status and nav bar and frame for each screenshot
         if (screenshotPaths.isEmpty) {
@@ -69,17 +73,20 @@ class ImageProcessor {
         }
         for (final screenshotPath in screenshotPaths) {
           // add status bar for each screenshot
-          await overlay(
-              _config.stagingDir, screenResources, screenshotPath.path);
+          await overlay(stagingDir, screenResources, screenshotPath.path);
 
           if (deviceType == DeviceType.android) {
             // add nav bar for each screenshot
-            await append(
-                _config.stagingDir, screenResources, screenshotPath.path);
+            await append(stagingDir, screenResources, screenshotPath.path);
           }
           if (_config.isFrameRequired(deviceName, orientation)) {
-            await frame(_config.stagingDir, screenProps, screenshotPath.path,
-                deviceType, runMode);
+            await frame(
+              stagingDir,
+              screenProps,
+              screenshotPath.path,
+              deviceType,
+              runMode,
+            );
           }
           if (screenshotPath.path.contains('%')) {
             await utils.fixEncodedChars(screenshotPath.path);
@@ -170,9 +177,15 @@ class ImageProcessor {
       Map<String, dynamic> screenResources, String screenshotPath) async {
     // if no status bar skip
     // todo: get missing status bars
-    if (screenResources['statusbar'] == null) {
+    if (screenResources['statusbar black'] == null) {
       printStatus(
-          'error: image ${p.basename(screenshotPath)} is missing status bar.');
+          'error: image ${p.basename(screenshotPath)} is missing black status bar.');
+      return Future.value(null);
+    }
+
+    if (screenResources['statusbar white'] == null) {
+      printStatus(
+          'error: image ${p.basename(screenshotPath)} is missing white status bar.');
       return Future.value(null);
     }
 
@@ -187,10 +200,24 @@ class ImageProcessor {
       statusbarPath = '$tmpDir/${screenResources['statusbar white']}';
     }
 
-    final options = {
+    var options = {
       'screenshotPath': screenshotPath,
       'statusbarPath': statusbarPath,
     };
+
+    if (screenResources['homeIndicator black'] != null &&
+        screenResources['homeIndicator white'] != null) {
+      if (im.isThresholdExceeded(screenshotPath, _kCrop)) {
+        // use black status bar
+        options['homeIndicatorPath'] =
+            '$tmpDir/${screenResources['homeIndicator black']}';
+      } else {
+        // use white status bar
+        options['homeIndicatorPath'] =
+            '$tmpDir/${screenResources['homeIndicator white']}';
+      }
+    }
+
     await im.convert('overlay', options);
   }
 

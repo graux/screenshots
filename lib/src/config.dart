@@ -16,7 +16,6 @@ const kEnvImageReceiverIPAddress = 'IMAGE_RECEIVER_ADDRESS';
 const kEnvImageReceiverPort = 'IMAGE_RECEIVER_PORT';
 const kEnvImageSendHost = 'IMAGE_SEND_HOST';
 const kEnvImageSendPort = 'IMAGE_SEND_PORT';
-const kEnvSreenshotsStagingDir = 'SCREENSHOTS_STAGING_DIR';
 
 /// Config info used to manage screenshots for android and ios.
 // Note: should not have context dependencies as is also used in driver.
@@ -88,6 +87,13 @@ class ScreenshotsConfig {
       : imageReceiverPort;
 
   String get stagingDir => _configInfo['staging'] as String;
+
+  String get screenshotsSubpath =>
+      (_configInfo.containsKey('runId') && _configInfo['runId'] != null)
+          ? "$kTestScreenshotsDir/${_configInfo['runId'] as String}"
+          : kTestScreenshotsDir;
+
+  String get screenshotsDir => '$stagingDir/$screenshotsSubpath';
 
   bool get rawScreenshots =>
       bool.tryParse(_configInfo['rawScreenshots'].toString()) ?? false;

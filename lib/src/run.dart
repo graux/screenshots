@@ -121,9 +121,7 @@ class Screenshots {
     }
 
     // init
-    await fs
-        .directory(path.join(config.stagingDir, kTestScreenshotsDir))
-        .create(recursive: true);
+    await fs.directory(config.screenshotsDir).create(recursive: true);
     if (!platform.isWindows) await resources.unpackScripts(config.stagingDir);
     if (config.archiveDir != null) {
       archive = Archive(config.archiveDir!);
@@ -424,7 +422,9 @@ class Screenshots {
       final bytes = <int>[];
       await request.forEach(bytes.addAll);
 
-      final screenshotFile = io.File(request.uri.path);
+      final screenshotFile = io.File(
+        "${config.screenshotsDir}/${request.uri.pathSegments.join("/")}",
+      );
 
       await screenshotFile.writeAsBytes(bytes);
 
@@ -441,11 +441,16 @@ class Screenshots {
       kEnvImageSendHost: config.imageSendHost?.address ??
           (deviceType == DeviceType.ios ? '127.0.0.1' : '10.0.2.2'),
       kEnvImageSendPort: config.imageSendPort.toString(),
-      kEnvSreenshotsStagingDir: config.stagingDir,
     };
 
     for (final testPath in config.tests) {
-      final command = (usePatrol ? ['patrol', 'test'] : ['flutter'])
+      final command = (usePatrol
+          ? [
+              'patrol',
+              ...(verbose ? <String>['-v'] : <String>[]),
+              'test'
+            ]
+          : ['flutter'])
         ..addAll(['-d', deviceId]);
       if (!usePatrol && deviceType == DeviceType.web) {
         command.addAll([
