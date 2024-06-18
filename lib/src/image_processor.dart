@@ -88,9 +88,6 @@ class ImageProcessor {
               runMode,
             );
           }
-          if (screenshotPath.path.contains('%')) {
-            await utils.fixEncodedChars(screenshotPath.path);
-          }
         }
         status.stop();
       } else {
