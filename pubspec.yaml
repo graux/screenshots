@@ -19,20 +19,32 @@ dependencies:
   resource_portable: ^3.0.0
   # network_info_plus: "^3.0.3"
   tool_mobile:
-    git: https://github.com/DrBu7cher/tool_mobile.git
+    git:
+      url: https://github.com/jonasbadstuebner/tool_mobile.git
+#      ref: 777a3ed6943331b925581484f689ce28576f22f1
     # path: /home/jbadstuebner/Dokumente/git/github.com/DrBu7cher/tool_mobile/main
   yaml: "^3.1.0"
 
 dev_dependencies:
   fake_process_manager:
-    git: https://github.com/DrBu7cher/fake_process_manager.git
+    git:
+      url: https://github.com/jonasbadstuebner/fake_process_manager.git
+#      ref: 3a877ee22b8497b6be616738e32a14c0ae7abb3a
+
     # path: /home/jbadstuebner/Dokumente/git/github.com/DrBu7cher/fake_process_manager/main
   flutter_lints: ^4.0.0
   mockito: ^5.4.4
   quiver: ^3.2.1
   tool_base_test:
-    git: https://github.com/DrBu7cher/tool_base_test.git
+    git:
+      url:  https://github.com/jonasbadstuebner/tool_base_test.git
+#      ref: 6e801f03e56dd34d42ba779e9a76755ec84ec394
     # path: /home/jbadstuebner/Dokumente/git/github.com/DrBu7cher/tool_base_test/main
+
+dependency_overrides:
+  tool_base:
+    git:
+      url: https://github.com/graux/tool_base.git
 
 executables:
   screenshots: main
